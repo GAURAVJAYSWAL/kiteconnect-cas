@@ -6,7 +6,9 @@
 
     <groupId>com.zerodhatech.kiteconnect</groupId>
     <artifactId>kiteconnect</artifactId>
-    <version>4.0.1</version>
+    <!-- Fork of upstream 4.0.1. The suffix keeps it distinct from the Central artifact, so a
+         `mvn -U` cannot quietly swap the call auction parser back out for the stock one. -->
+    <version>4.0.1-cas</version>
     <packaging>jar</packaging>
 
     <distributionManagement>
@@ -47,6 +49,7 @@
     </scm>
 
     <build>
+        <sourceDirectory>kiteconnect/src</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

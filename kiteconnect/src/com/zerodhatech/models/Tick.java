@@ -50,6 +50,12 @@ public class Tick {
     private double oiDayLow;
     @SerializedName("tickTimestamp")
     private Date tickTimestamp;
+    @SerializedName("referenceLimitPrice")
+    private double referenceLimitPrice;
+    @SerializedName("indicativeClosePrice")
+    private double indicativeClosePrice;
+    @SerializedName("totalImbalanceQty")
+    private long totalImbalanceQty;
 
     @SerializedName("depth")
     private Map<String, ArrayList<Depth>> depth;
@@ -204,6 +210,30 @@ public class Tick {
 
     public void setTotalSellQuantity(double totalSellQuantity) {
         this.totalSellQuantity = totalSellQuantity;
+    }
+
+    public double getReferenceLimitPrice() {
+        return referenceLimitPrice;
+    }
+
+    public void setReferenceLimitPrice(double referenceLimitPrice) {
+        this.referenceLimitPrice = referenceLimitPrice;
+    }
+
+    public double getIndicativeClosePrice() {
+        return indicativeClosePrice;
+    }
+
+    public void setIndicativeClosePrice(double indicativeClosePrice) {
+        this.indicativeClosePrice = indicativeClosePrice;
+    }
+
+    public long getTotalImbalanceQty() {
+        return totalImbalanceQty;
+    }
+
+    public void setTotalImbalanceQty(long totalImbalanceQty) {
+        this.totalImbalanceQty = totalImbalanceQty;
     }
 
     public Map<String, ArrayList<Depth>> getMarketDepth() {

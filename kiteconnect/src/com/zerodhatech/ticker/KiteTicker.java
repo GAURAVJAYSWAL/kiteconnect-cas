@@ -53,7 +53,8 @@ public class KiteTicker {
 
     public static String modeFull  = "full", // Full quote inludes Quote items, market depth, OI, day high OI, day low OI, last traded time, tick timestamp.
             modeQuote = "quote", // Quote includes last traded price, last traded quantity, average traded price, volume, total bid(buy quantity), total ask(sell quantity), open, high, low, close.
-            modeLTP   = "ltp"; // Only LTP.
+            modeLTP   = "ltp", // Only LTP.
+            modeFullCAS = "full_cas"; // Full quote plus the call auction fields: reference limit price, indicative close price, total imbalance quantity.
 
     private long lastPongAt = 0;
     private Set<Long> subscribedTokens = new HashSet<>();
@@ -442,7 +443,7 @@ public class KiteTicker {
      * we have to keep a main Array List which is global and keep deleting element in the list and add new data element in that place and call notify data set changed.
      * @return List of parsed ticks.
      */
-    private ArrayList<Tick> parseBinary(byte [] binaryPackets) {
+    ArrayList<Tick> parseBinary(byte [] binaryPackets) {
         ArrayList<Tick> ticks = new ArrayList<Tick>();
         ArrayList<byte[]> packets = splitPackets(binaryPackets);
         for (int i = 0; i < packets.size(); i++) {
@@ -458,15 +459,15 @@ public class KiteTicker {
             if(bin.length == 8) {
                 Tick tick = getLtpQuote(bin, x, dec1, segment != Indices);
                 ticks.add(tick);
-            }else if(bin.length == 28 || bin.length == 32) {
+            }else if(bin.length == 28 || bin.length == 32 || bin.length == 36) {
                 Tick tick = getIndeciesData(bin, x, segment != Indices);
                 ticks.add(tick);
             }else if(bin.length == 44) {
                 Tick tick = getQuoteData(bin, x, dec1, segment != Indices);
                 ticks.add(tick);
-            } else if(bin.length == 184) {
+            } else if(bin.length == 184 || bin.length == 200) {
                 Tick tick = getQuoteData(bin, x, dec1, segment != Indices);
-                tick.setMode(modeFull);
+                tick.setMode(bin.length == 200 ? modeFullCAS : modeFull);
                 ticks.add(getFullData(bin, dec1, tick));
             }
         }
@@ -499,6 +500,10 @@ public class KiteTicker {
             } else {
                 tick.setTickTimestamp(null);
             }
+        }
+        if(bin.length >= 36) {
+            tick.setMode(modeFullCAS);
+            tick.setIndicativeClosePrice(getUnsignedInt(getBytes(bin, 32, 36)) / (double) dec);
         }
         return tick;
     }
@@ -561,6 +566,11 @@ public class KiteTicker {
             tick.setTickTimestamp(null);
         }
         tick.setMarketDepth(getDepthData(bin, dec, 64, 184));
+        if(bin.length >= 200) {
+            tick.setReferenceLimitPrice(getUnsignedInt(getBytes(bin, 184, 188)) / (double) dec);
+            tick.setIndicativeClosePrice(getUnsignedInt(getBytes(bin, 188, 192)) / (double) dec);
+            tick.setTotalImbalanceQty(getLong(getBytes(bin, 192, 200)));
+        }
         return  tick;
     }
 
@@ -620,6 +630,22 @@ public class KiteTicker {
             return bb.getInt();
         else
             return bb.getDouble();
+    }
+
+    /** Convert four bytes of binary data to an unsigned 32 bit value. Quantities and prices are
+     * unsigned on the wire, so the top bit must not be read as a sign. */
+    private long getUnsignedInt(byte[] bin){
+        ByteBuffer bb = ByteBuffer.wrap(bin);
+        bb.order(ByteOrder.BIG_ENDIAN);
+        return bb.getInt() & 0xffffffffL;
+    }
+
+    /** Convert eight bytes of binary data to a signed 64 bit value. The auction imbalance is
+     * signed: a sell side imbalance arrives as a negative quantity. */
+    private long getLong(byte[] bin){
+        ByteBuffer bb = ByteBuffer.wrap(bin);
+        bb.order(ByteOrder.BIG_ENDIAN);
+        return bb.getLong();
     }
 
     /* Convert binary data to long datatype*/
