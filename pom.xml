@@ -11,14 +11,17 @@
     <version>4.0.1-cas</version>
     <packaging>jar</packaging>
 
+    <!-- Published to GitHub Packages, not Central. Central verifies namespace ownership and
+         com.zerodhatech.* is Zerodha's, so it would refuse this fork - and if it accepted it,
+         these bytes would be attributed to them. The block this replaces pointed at the sunset
+         OSSRH staging API and its release URL was typo'd "hhttps://"; neither was reachable.
+         NOTE: GitHub Packages requires a token to READ as well as write, even for a public
+         repository. See README-CAS.md. -->
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>hhttps://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/GAURAVJAYSWAL/kiteconnect-cas</url>
         </repository>
     </distributionManagement>
 
@@ -75,20 +78,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
                 <executions>
@@ -99,17 +88,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.8.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <autoPublish>true</autoPublish>
-                    <waitUntil>published</waitUntil>
-                </configuration>
             </plugin>
         </plugins>
     </build>
